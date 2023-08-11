@@ -10,6 +10,8 @@
 # Import DroneKit-Python
 from dronekit import connect, Command, LocationGlobal
 from pymavlink import mavutil
+from pymavlink.dialects.v20 import ardupilotmega
+
 import time, math
 
 ################################################################################################
@@ -176,7 +178,7 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 def servo():
     msg = vehicle.message_factory.command_long_encode(
     0, 0,    # target_system, target_component
-    mavutil.mavlink.MAV_CMD_DO_SET_ACTUATOR, #command
+    ardupilotmega.MAV_CMD_DO_SET_ACTUATOR, #command
     0,
     1)    # param 3 ~ 7 not used
 
