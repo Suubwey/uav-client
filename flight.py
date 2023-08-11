@@ -177,7 +177,8 @@ def servo():
     msg = vehicle.message_factory.command_long_encode(
     0, 0,    # target_system, target_component
     mavutil.mavlink.MAV_CMD_DO_SET_ACTUATOR, #command
-    0)    # param 3 ~ 7 not used
+    0,
+    1)    # param 3 ~ 7 not used
 
     # send command to vehicle
     vehicle.send_mavlink(msg)

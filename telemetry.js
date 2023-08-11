@@ -64,6 +64,8 @@ command1.altitude = 1168;
 command1.latitude = 51.0868047;
 command1.longitude = -114.0596604;
 
+const command2 = new common.DoSetActuatorCommand();
+command2.actuator1 = 1;
 // // flight information message
 // const command = new common.RequestMessageCommand();
 // command.messageId = 264;
@@ -79,7 +81,7 @@ command1.longitude = -114.0596604;
 // command.messageId = 2;
 // command.responseTarget = 0;
 
-port.on("open", async () => {
+common.port.on("open", async () => {
   let res1 = await send(port, command, new MavLinkProtocolV2());
-  let res2 = await send(port, command1, new MavLinkProtocolV2());
+  let res2 = await send(port, command2, new MavLinkProtocolV2());
 });
