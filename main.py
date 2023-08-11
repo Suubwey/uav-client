@@ -52,9 +52,10 @@ async def check_internet_connection(url='http://www.google.com', timeout=5):
             await asyncio.sleep(5)
 
 async def main():
-    await flight.servo();
     await check_internet_connection()
     await connect_websocket()
+    await flight.servo();
+
 
 asyncio.run(main())
 
