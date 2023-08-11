@@ -172,3 +172,13 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
     newlon = original_location['lng'] + (dLon * 180/math.pi)
     return LocationGlobal(newlat, newlon,original_location['alt']+alt)
 
+
+def servo():
+    msg = vehicle.message_factory.command_long_encode(
+    0, 0,    # target_system, target_component
+    mavutil.mavlink.MAV_CMD_DO_SET_ACTUATOR, #command
+    0, #confirmation
+    1)    # param 3 ~ 7 not used
+
+    # send command to vehicle
+    vehicle.send_mavlink(msg)

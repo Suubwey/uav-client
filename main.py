@@ -3,6 +3,8 @@ import websockets
 import flight
 import json
 import requests
+
+
 async def send_location(websocket):
     while True:
         # Send location data to the server
@@ -52,6 +54,7 @@ async def check_internet_connection(url='http://www.google.com', timeout=5):
 async def main():
     await check_internet_connection()
     await connect_websocket()
+    await flight.servo();
 
 asyncio.run(main())
 
