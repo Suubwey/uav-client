@@ -180,5 +180,7 @@ def servo():
     0, #confirmation
     1)    # param 3 ~ 7 not used
 
+    print(123)
+
     # send command to vehicle
     vehicle.send_mavlink(msg)
