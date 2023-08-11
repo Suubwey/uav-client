@@ -175,6 +175,19 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 
 
 def servo():
+
+        # Change to AUTO mode
+    PX4setMode(MAV_MODE_AUTO)
+    time.sleep(1)
+
+    # Load commands
+    cmds = vehicle.commands
+    cmds.clear()
+    # Arm vehicle
+    vehicle.armed = True
+
+
+
     msg = vehicle.message_factory.command_long_encode(
     0, 0,    # target_system, target_component
     mavutil.mavlink.MAV_CMD_DO_SET_SERVO, #command
