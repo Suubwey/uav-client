@@ -5,7 +5,11 @@ const socketIoClient = require("socket.io-client");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
 
 // Connect to Raspberry Pi
 const raspberryPiSocket = socketIoClient.connect("http://:10.0.0.160:3000"); // Change to your Raspberry Pi's address
