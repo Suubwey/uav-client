@@ -8,9 +8,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 // Connect to Raspberry Pi
-const raspberryPiSocket = socketIoClient.connect(
-  "http://raspberrypi.local:3000"
-); // Change to your Raspberry Pi's address
+const raspberryPiSocket = socketIoClient.connect("http://:10.0.0.160:3000"); // Change to your Raspberry Pi's address
 
 // Broadcast the video data to all connected clients
 raspberryPiSocket.on("video", (data) => {
