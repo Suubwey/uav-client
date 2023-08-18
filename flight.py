@@ -179,11 +179,12 @@ def servo():
     servo = Servo(15)
     val = -1
     while True:
-        servo.value = val
-        sleep(0.1)
-        val = val + 0.1
-        if val > 1:
-            val = -1
+        servo.min()
+        sleep(1)
+        servo.mid()
+        sleep(1)
+        servo.max()
+        sleep(1)
 
 
 def distance():
