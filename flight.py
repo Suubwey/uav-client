@@ -11,10 +11,11 @@
 from dronekit import connect, Command, LocationGlobal
 from pymavlink import mavutil
 from gpiozero import Servo
+from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
 import time, math
 import RPi.GPIO as GPIO
-
+gpiozero.Device.pin_factory = PiGPIOFactory()
 ################################################################################################
 # Settings
 ################################################################################################
@@ -177,14 +178,11 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 
 def servo():
     servo = Servo(15)
-    val = -1
     while True:
         servo.min()
-        sleep(1)
-        servo.mid()
-        sleep(1)
+        sleep(0.5)
         servo.max()
-        sleep(1)
+        sleep(0.5)
 
 
 def distance():
