@@ -179,10 +179,6 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 
 def servo():
     servo = Servo(15)
-    servo.min()
-    sleep(1)
-    servo.mid()
-    sleep(1)
     servo.max()
     sleep(1)
     servo.mid()
