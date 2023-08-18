@@ -178,11 +178,10 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 
 def servo():
     servo = Servo(15)
-    while True:
-        servo.min()
-        sleep(0.5)
-        servo.max()
-        sleep(0.5)
+    servo.min()
+        # sleep(0.5)
+        # servo.max()
+        # sleep(0.5)
 
 
 def distance():
