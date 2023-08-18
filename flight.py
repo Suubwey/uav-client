@@ -13,7 +13,7 @@ from pymavlink import mavutil
 from gpiozero import Servo
 from time import sleep
 import time, math
-
+import RPi.GPIO as GPIO
 ################################################################################################
 # Settings
 ################################################################################################
@@ -64,7 +64,6 @@ print(" Alt: %s" % vehicle.location.global_relative_frame)
 home = vehicle.location.global_relative_frame
 
 def mission(response):
-
 
     # Change to AUTO mode
     PX4setMode(MAV_MODE_AUTO)
@@ -186,3 +185,7 @@ def servo():
         val = val + 0.1
         if val > 1:
             val = -1
+
+
+def distance():
+    print(123);
