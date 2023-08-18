@@ -78,7 +78,8 @@ if __name__ == '__main__':
             time.sleep(0.1)
             dist4 = distance(GPIO_TRIGGER_4, GPIO_ECHO_4)
             print("Measured Distance 4 = %.1f cm" % dist4)
-            time.sleep(1) # Wait for 1 second before next measurement
+            time.sleep(1) 
+            # Wait for 1 second before next measurement
 
     except KeyboardInterrupt:   
         print("Measurement stopped by User")

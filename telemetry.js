@@ -15,8 +15,6 @@ const port = new SerialPort({
   baudRate: 57600,
 });
 
-// console.log(port);
-
 // constructing a reader that will emit each packet separately
 const reader = port
   .pipe(new MavLinkPacketSplitter())
@@ -73,9 +71,6 @@ command2.actuator5 = NaN;
 command2.actuator6 = NaN;
 command2.index = 0;
 
-const command3 = new common.DoSetServoCommand();
-command3.instance = 1;
-command3.pwm = 2000;
 // // flight information message
 // const command = new common.RequestMessageCommand();
 // command.messageId = 264;
@@ -94,5 +89,4 @@ command3.pwm = 2000;
 port.on("open", async () => {
   let res1 = await send(port, command, new MavLinkProtocolV2());
   let res2 = await send(port, command2, new MavLinkProtocolV2());
-  console.log(res2);
 });
