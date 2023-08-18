@@ -185,8 +185,10 @@ def servo():
     sleep(1)
     servo.min()
     sleep(1)
-
-
+    servo.mid()
+    sleep(1)
+    servo.max()
+    sleep(1)
 
 def distance():
     print(123);
