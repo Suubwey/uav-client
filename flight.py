@@ -11,11 +11,9 @@
 from dronekit import connect, Command, LocationGlobal
 from pymavlink import mavutil
 from gpiozero import Servo
-from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
 import time, math
 import RPi.GPIO as GPIO
-gpiozero.Device.pin_factory = PiGPIOFactory()
 
 ################################################################################################
 # Settings
