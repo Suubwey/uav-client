@@ -184,6 +184,8 @@ def servo():
     servo.mid()
     sleep(1)
     servo.min()
+    sleep(1)
+
 
 
 def distance():
