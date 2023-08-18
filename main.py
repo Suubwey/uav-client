@@ -21,11 +21,10 @@ async def receive_messages(websocket):
         response = json.loads(response)
         print(f"Received: {response}")
 
-        print(response,"1222")
 
-        if response.type=='mission':
-            flight.mission(response.command)
-        if response.type=='servo':
+        if response['type']=='mission':
+            flight.mission(response['command'])
+        if response['type']=='servo':
             flight.servo()
 
 
