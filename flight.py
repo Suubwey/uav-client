@@ -10,7 +10,8 @@
 # Import DroneKit-Python
 from dronekit import connect, Command, LocationGlobal
 from pymavlink import mavutil
-
+from gpiozero import Servo
+from time import sleep
 import time, math
 
 ################################################################################################
@@ -175,26 +176,13 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 
 
 def servo():
-
-        # Change to AUTO mode
-    PX4setMode(MAV_MODE_AUTO)
-    time.sleep(1)
-
-    # Load commands
-    cmds = vehicle.commands
-    cmds.clear()
-    # Arm vehicle
-    vehicle.armed = True
-
-
-
-    msg = vehicle.message_factory.command_long_encode(
-    0, 0,    # target_system, target_component
-    mavutil.mavlink, #command
-    0, #confirmation
-    1,    # servo number
-    1500,          # servo position between 1000 and 2000
-    0, 0, 0, 0, 0)    # param 3 ~ 7 not used
-
-    # send command to vehicle
-    vehicle.send_mavlink(msg)
+    servo = Servo(15)
+    val = -1
+    times=3
+    while times>0:
+        times=times-1
+        servo.value = val
+        sleep(0.1)
+        val = val + 0.1
+        if val > 1:
+            val = -1

@@ -20,7 +20,12 @@ async def receive_messages(websocket):
         response = await websocket.recv()
         response = json.loads(response)
         print(f"Received: {response}")
-        flight.mission(response)
+
+        if response.type=='mission':
+            flight.mission(response.command)
+        if response.type=='servo':
+            flight.servo()
+
 
 async def connect_websocket():
     uri = "ws://3.139.94.118:3000"  # Replace with your WebSocket server URL
