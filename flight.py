@@ -177,9 +177,7 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
 def servo():
     servo = Servo(15)
     val = -1
-    times=3
-    while times>0:
-        times=times-1
+    while True:
         servo.value = val
         sleep(0.1)
         val = val + 0.1
