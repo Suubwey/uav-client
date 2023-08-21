@@ -64,6 +64,18 @@ def distance(trigger, echo):
         print(f"An error occurred while measuring distance: {e}")
         return None
 
+def check_distance(event_to_set):
+    if not event_to_set.is_set():
+        dist1 = distance(GPIO_TRIGGER_1, GPIO_ECHO_1)
+        time.sleep(0.1) # Adding a short delay
+        dist2 = distance(GPIO_TRIGGER_2, GPIO_ECHO_2)
+        time.sleep(0.1)
+        dist3 = distance(GPIO_TRIGGER_3, GPIO_ECHO_3)
+        time.sleep(0.1)
+        dist4 = distance(GPIO_TRIGGER_4, GPIO_ECHO_4)
+        if dist1 < 50 or dist2 < 50 or dist3 < 50 or dist4 < 50:
+            event_to_set.set()
+
 if __name__ == '__main__':
     try:
         while True:

@@ -13,15 +13,18 @@ from pymavlink import mavutil
 from gpiozero import Servo
 from gpiozero.pins.pigpio import PiGPIOFactory
 import gpiozero
+import threading
+import distance
 from time import sleep
-import time, math
+import time
+import math
 import RPi.GPIO as GPIO
 gpiozero.Device.pin_factory = PiGPIOFactory()
 ################################################################################################
 # Settings
 ################################################################################################
-    
-MAV_MODE_AUTO   = 4
+
+MAV_MODE_AUTO = 4
 
 
 ################################################################################################
@@ -31,7 +34,6 @@ MAV_MODE_AUTO   = 4
 # Connect to the Vehicle
 print("Connecting")
 vehicle = connect("/dev/ttyACM0", wait_ready=True)
-    
 
 
 ################################################################################################
@@ -39,18 +41,18 @@ vehicle = connect("/dev/ttyACM0", wait_ready=True)
 ################################################################################################
 
 home_position_set = False
-#Create a message listener for home position fix
+# Create a message listener for home position fix
+
+
 @vehicle.on_message('HOME_POSITION')
 def listener(self, name, home_position):
     global home_position_set
     home_position_set = True
 
 
-
 ################################################################################################
 # Start mission example
 ################################################################################################
-
 
 # wait for a home position lock
 while not home_position_set:
@@ -62,12 +64,12 @@ print(" Type: %s" % vehicle._vehicle_type)
 print(" Armed: %s" % vehicle.armed)
 print(" System status: %s" % vehicle.system_status.state)
 print(" GPS: %s" % vehicle.gps_0)
-print(" Alt: %s" % vehicle.location.global_relative_frame)
+print(" Alt: %s" % vehicle.location.global_relative_frame.alt)
 
 home = vehicle.location.global_relative_frame
 
-def mission(response):
 
+def setup(response):
     # Change to AUTO mode
     PX4setMode(MAV_MODE_AUTO)
     time.sleep(1)
@@ -76,65 +78,81 @@ def mission(response):
     cmds = vehicle.commands
     cmds.clear()
 
-
-
     # takeoff to 10 meters
-    wp = get_location_offset_meters(home, 0, 0, 10);
-    cmd = Command(0,0,0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
+    wp = get_location_offset_meters(home, 0, 0, 10)
+    cmd = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                  mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
     cmds.add(cmd)
-
-
 
     for i in response:
-        wp = get_location_offset_meters_dict(i, 0, 0, 0);
-        cmd = Command(0,0,0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
+        wp = get_location_offset_meters_dict(i, 0, 0, 0)
+        cmd = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                      mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
         cmds.add(cmd)
 
-
     # land
-    wp = get_location_offset_meters(home, 0, 0, 10);
-    cmd = Command(0,0,0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_LAND, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
+    wp = get_location_offset_meters(home, 0, 0, 10)
+    cmd = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                  mavutil.mavlink.MAV_CMD_NAV_LAND, 0, 1, 0, 0, 0, 0, wp.lat, wp.lon, wp.alt)
     cmds.add(cmd)
-
 
     # Upload mission
     cmds.upload()
-    time.sleep(2)
 
-    # Arm vehicle
-    vehicle.armed = True
 
-    # monitor mission execution
+def run(event):
     nextwaypoint = vehicle.commands.next
+
     while nextwaypoint < len(vehicle.commands):
         if vehicle.commands.next > nextwaypoint:
             display_seq = vehicle.commands.next+1
             print("Moving to waypoint %s" % display_seq)
             nextwaypoint = vehicle.commands.next
         time.sleep(1)
+        if event.is_set():
+            vehicle.commands.clear()
+            vehicle.commands.add(Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_LOITER_UNLIM, 0, 0, 0, 0,
+                                 0, 0, vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.long, vehicle.location.global_relative_frame.alt))
+            break
 
-    # wait for the vehicle to land
-    while vehicle.commands.next > 0:
+    if not event.is_set():
+        # wait for the vehicle to land
+        while vehicle.commands.next > 0:
+            time.sleep(1)
+
+        # Disarm vehicle
+        vehicle.armed = False
+        time.sleep(1)
+
+        # Close vehicle object before exiting script
+        vehicle.close()
         time.sleep(1)
 
 
-    # Disarm vehicle
-    vehicle.armed = False
-    time.sleep(1)
+def mission(response):
+    setup(response)
+    time.sleep(2)
 
-    # Close vehicle object before exiting script
-    vehicle.close()
-    time.sleep(1)
+    # Arm vehicle
+    vehicle.armed = True
+
+    # monitor mission execution
+    cancel_flag = threading.Event()
+    main_thread = threading.Thread(target=run, args=(cancel_flag,))
+    gpio_thread = threading.Thread(
+        target=distance.check_distance, args=(cancel_flag,))
+    main_thread.start()
+    gpio_thread.start()
+
 
 def PX4setMode(mavMode):
     vehicle._master.mav.command_long_send(vehicle._master.target_system, vehicle._master.target_component,
-                                            mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0,
-                                            mavMode,
-                                            0, 0, 0, 0, 0, 0)
+                                          mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0,
+                                          mavMode,
+                                          0, 0, 0, 0, 0, 0)
+
 
 def get_location_offset_meters(original_location, dNorth, dEast, alt):
-
-
     """
     Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the
     specified `original_location`. The returned Location adds the entered `alt` value to the altitude of the `original_location`.
@@ -144,19 +162,18 @@ def get_location_offset_meters(original_location, dNorth, dEast, alt):
     For more information see:
     http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
     """
-    earth_radius=6378137.0 #Radius of "spherical" earth
-    #Coordinate offsets in radians
+    earth_radius = 6378137.0  # Radius of "spherical" earth
+    # Coordinate offsets in radians
     dLat = dNorth/earth_radius
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
 
-    #New position in decimal degrees
+    # New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return LocationGlobal(newlat, newlon,original_location.alt+alt)
+    return LocationGlobal(newlat, newlon, original_location.alt+alt)
+
 
 def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
-
-
     """
     Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the
     specified `original_location`. The returned Location adds the entered `alt` value to the altitude of the `original_location`.
@@ -166,15 +183,15 @@ def get_location_offset_meters_dict(original_location, dNorth, dEast, alt):
     For more information see:
     http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
     """
-    earth_radius=6378137.0 #Radius of "spherical" earth
-    #Coordinate offsets in radians
+    earth_radius = 6378137.0  # Radius of "spherical" earth
+    # Coordinate offsets in radians
     dLat = dNorth/earth_radius
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location['lat']/180))
 
-    #New position in decimal degrees
+    # New position in decimal degrees
     newlat = original_location['lat'] + (dLat * 180/math.pi)
     newlon = original_location['lng'] + (dLon * 180/math.pi)
-    return LocationGlobal(newlat, newlon,original_location['alt']+alt)
+    return LocationGlobal(newlat, newlon, original_location['alt']+alt)
 
 
 def servo():
@@ -186,5 +203,6 @@ def servo():
     servo.max()
     sleep(1)
 
-def distance():
-    print(123);
+
+if __name__ == "__main__":
+    print()
