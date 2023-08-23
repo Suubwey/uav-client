@@ -111,8 +111,9 @@ def run(event):
         time.sleep(1)
         if event.is_set():
             vehicle.commands.clear()
-            vehicle.commands.add(Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_LOITER_UNLIM, 0, 0, 0, 0,
-                                 0, 0, vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.long, vehicle.location.global_relative_frame.alt))
+            # vehicle.commands.add(Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_LOITER_UNLIM, 0, 0, 0, 0,
+            #                      0, 0, vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.long, vehicle.location.global_relative_frame.alt))
+            vehicle.armed = False
             break
 
     if not event.is_set():
